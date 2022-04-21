@@ -21,6 +21,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,31 +37,33 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 //    final static String ="20b45f3d7df24a49b3da6f9a7addf5d1";
-    private RequestQueue mQueue;
 
+    private RequestQueue mQueue;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
-
     private ActionBarDrawerToggle mDrawerToggle;
-    private String[] items;
 
-    private final ArrayList<String> test = new ArrayList<>();
+    private ArrayList<String> sourcesArrList = new ArrayList<>();
+
+    private String[] array;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mQueue = Volley.newRequestQueue(this);
 
-        items = new String[15];
-        for (int i = 0; i < items.length; i++)
-            items[i] = "Drawer Item #" + (i + 1);
+
+        getChannels();
+
+
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerList = findViewById(R.id.left_drawer);
 
-        mDrawerList.setAdapter(new ArrayAdapter<>(this,
-                R.layout.drawer_list_item, items));
+//        mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, array));
 
         mDrawerList.setOnItemClickListener(
                 (parent, view, position, id) -> selectItem(position)
@@ -77,12 +80,13 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
         }
+
+        //mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, array));
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
         mDrawerToggle.syncState();
     }
 
@@ -104,7 +108,12 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Selected "+position, Toast.LENGTH_SHORT).show();
         mDrawerLayout.closeDrawer(mDrawerList);
     }
+
+
+
+
     private void getChannels(){
+
         String url ="https://newsapi.org/v2/sources?apiKey=20b45f3d7df24a49b3da6f9a7addf5d1";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
@@ -115,6 +124,18 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             JSONArray sources = response.getJSONArray("sources");
                             int numberOfSources = sources.length();
+
+                            for(int i = 0;i <sources.length();i++){
+                                JSONObject s = sources.getJSONObject(i);
+                                String name = s.getString("name");
+                                sourcesArrList.add(name);
+                            }
+                            array = new String[sourcesArrList.size()];
+                            for(int j =0;j<sourcesArrList.size();j++){
+                                array[j] = sourcesArrList.get(j);
+                            }
+                            adapt();
+
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -140,6 +161,9 @@ public class MainActivity extends AppCompatActivity {
 
         mQueue.add(request);
 
+    }
+    private void adapt(){
+        mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, array));
     }
 
 }
