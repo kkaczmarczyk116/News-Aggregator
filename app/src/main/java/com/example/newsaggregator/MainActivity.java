@@ -4,17 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -29,11 +27,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 
@@ -51,17 +46,25 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<String> sourcesArrList = new ArrayList<>();
 
-    private String[] array;
+
 
     private ViewPager2 viewPager2;
     private ArrayList<ViewPagerItem> viewPagerItemArrayList;
 
+    private ArrayList<SourcesObj> sourcesObjArrayList = new ArrayList<>();
+
+    private ArrayList<SourcesObj> temp = new ArrayList<>();
+
+    private ArrayList<String> test;
+
+    private Menu opt_menu;
+
+    private ListAdapter listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         viewPager2 = findViewById(R.id.viewpager);
 
@@ -70,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         mQueue = Volley.newRequestQueue(this);
 
         //setupPage();
-        getStories("cnn");
+        //getStories("cnn");
 
         getChannels();
 
@@ -97,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setHomeButtonEnabled(true);
         }
 
+
+
         //mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, array));
     }
 
@@ -116,18 +121,54 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if (mDrawerToggle.onOptionsItemSelected(item)) {
+
             return true;
         }
+        Toast.makeText(this, String.valueOf(item), Toast.LENGTH_SHORT).show();
+        getByCategory(String.valueOf(item));
+        //getSupportActionBar().setTitle(String.valueOf(item) + "( "+temp.size() +" )");
         return super.onOptionsItemSelected(item);
     }
 
-    private void selectItem(int position) {
-        Toast.makeText(this, "Selected "+position, Toast.LENGTH_SHORT).show();
-        mDrawerLayout.closeDrawer(mDrawerList);
+    private void getByCategory(String valueOf) {
+        temp.clear();
+        for(int i =0;i<sourcesObjArrayList.size();i++){
+            String add = sourcesObjArrayList.get(i).getCategory();
+            SourcesObj obj = sourcesObjArrayList.get(i);
+            if(add.equals(valueOf)){
+                temp.add(obj);
+            }
+            else if (valueOf == "All"){
+                temp = (ArrayList<SourcesObj>)sourcesObjArrayList.clone();
+            }
+
+
+        }
+        listAdapter = new ListAdapter(this,R.layout.drawer_list_item,temp);
+        mDrawerList.setAdapter(listAdapter);
     }
 
+    private void selectItem(int position) {
+        //Toast.makeText(this, "Selected "+ sourcesObjArrayList.get(position).getName(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, ""+mDrawerList.getAdapter().getItem(position), Toast.LENGTH_SHORT).show();
+        if(temp.isEmpty()){
+            getStories(sourcesObjArrayList.get(position).getId());
+            mDrawerLayout.closeDrawer(mDrawerList);
+            getSupportActionBar().setTitle(sourcesObjArrayList.get(position).getName());
+        }else{
+            getStories(temp.get(position).getId());
+            mDrawerLayout.closeDrawer(mDrawerList);
+            getSupportActionBar().setTitle(temp.get(position).getName());
+        }
 
+    }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        opt_menu = menu;
+        return true;
+    }
 
     private void getChannels(){
 
@@ -145,12 +186,19 @@ public class MainActivity extends AppCompatActivity {
                             for(int i = 0;i <sources.length();i++){
                                 JSONObject s = sources.getJSONObject(i);
                                 String name = s.getString("name");
-                                sourcesArrList.add(name);
+                                String id = s.getString("id");
+                                String cat = s.getString("category");
+                                //sourcesArrList.add(name);
+                                SourcesObj sourcesObj = new SourcesObj(name,id,cat);
+                                sourcesObjArrayList.add(sourcesObj);
                             }
-                            array = new String[sourcesArrList.size()];
-                            for(int j =0;j<sourcesArrList.size();j++){
-                                array[j] = sourcesArrList.get(j);
+                            getSupportActionBar().setTitle("News Gateway( "+sourcesObjArrayList.size()+ " )");
+                            test = getAllCategorirs(sourcesObjArrayList);
+
+                            for(String s: test){
+                                opt_menu.add(s);
                             }
+//
                             adapt();
 
 
@@ -180,7 +228,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void adapt(){
-        mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, array));
+        ListAdapter listAdapter = new ListAdapter(this,R.layout.drawer_list_item,sourcesObjArrayList);
+        mDrawerList.setAdapter(listAdapter);
+
+        //mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, array));
     }
 
     private void getStories(String NewsSource){
@@ -193,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
+                            viewPagerItemArrayList.clear();
                             String title;
                             String date ;
                             String page_source;
@@ -284,6 +336,18 @@ public class MainActivity extends AppCompatActivity {
 
 
         mQueue.add(request);
+
+    }
+
+    private ArrayList<String> getAllCategorirs(ArrayList<SourcesObj> all){
+        ArrayList<String>  temp = new ArrayList<>();
+        temp.add("All");
+        for(int i =0;i < all.size();i++){
+            if(!temp.contains(all.get(i).getCategory())){
+                temp.add(all.get(i).getCategory());
+            }
+        }
+        return temp;
 
     }
 
