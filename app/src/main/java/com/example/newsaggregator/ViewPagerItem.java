@@ -13,4 +13,11 @@ public class ViewPagerItem {
         this.pageUrl = pageUrl;
     }
 
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
 }

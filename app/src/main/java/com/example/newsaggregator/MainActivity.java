@@ -6,13 +6,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -32,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 //    final static String ="20b45f3d7df24a49b3da6f9a7addf5d1";
 
 
@@ -60,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private Menu opt_menu;
 
     private ListAdapter listAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         //mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, array));
+
+
     }
 
 
@@ -303,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                                 ViewPagerAdapter vpAdapter = new ViewPagerAdapter(viewPagerItemArrayList);
+                                //ViewPagerAdapter testAdapter = new ViewPagerAdapter(viewPagerItemArrayList,listener);
                                 viewPager2.setAdapter(vpAdapter);
                                 viewPager2.setClipToPadding(false);
                                 viewPager2.setClipChildren(false);
@@ -350,8 +357,6 @@ public class MainActivity extends AppCompatActivity {
         return temp;
 
     }
-
-
 
 
 

@@ -1,29 +1,42 @@
 package com.example.newsaggregator;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-
+import android.widget.Toast;
 
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.type.DateTime;
+import com.google.type.DateTimeOrBuilder;
 import com.squareup.picasso.Picasso;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.ViewHolder> {
 
     ArrayList<ViewPagerItem> viewPageItemArrayList;
     Picasso picasso;
 
+
     public ViewPagerAdapter(ArrayList<ViewPagerItem> viewPageItemArrayList) {
         this.viewPageItemArrayList = viewPageItemArrayList;
+
     }
 
     @NonNull
@@ -43,6 +56,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
         if(viewPagerItem.picUrl == " "){
             holder.page_pic.setImageResource(R.drawable.noimage);
         }else{
+
             picasso.load(viewPagerItem.picUrl)
                     .placeholder(R.drawable.loading)
                     .error(R.drawable.brokenimage)
@@ -55,9 +69,36 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
         holder.page_source.setText(viewPagerItem.source);
         holder.page_desc.setText(viewPagerItem.desc);
         holder.page_counter.setText(""+(position+1)+" of "+viewPageItemArrayList.size());
+        String web = viewPageItemArrayList.get(position).pageUrl;
+        holder.page_title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(web));
+                view.getContext().startActivity(browserIntent);
+
+            }
+        });
+
+        holder.page_desc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(web));
+                view.getContext().startActivity(browserIntent);
+            }
+        });
+
+        holder.page_pic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(web));
+                view.getContext().startActivity(browserIntent);
+            }
+        });
+
 
 
     }
+
 
     @Override
     public int getItemCount() {
